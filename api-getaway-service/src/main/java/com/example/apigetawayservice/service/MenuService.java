@@ -44,7 +44,7 @@ public class MenuService {
 
     public void createArticle(Scanner scanner) {
         System.out.print("Enter article name: ");
-        String name = scanner.nextLine();git status
+        String name = scanner.nextLine();
 
         System.out.print("Enter author name: ");
         String author = scanner.nextLine();
