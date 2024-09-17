@@ -21,17 +21,6 @@ public class WordsMappingController {
         this.wordsMappingService = wordsMappingService;
     }
 
-    // Get all word mappings
-    @Operation(summary = "Get all word mappings", description = "Retrieve a list of all word mappings in the database")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved all word mappings")
-    @GetMapping("/all")
-    public ResponseEntity<List<WordsMapping>> getAllWordsMappings() {
-        List<WordsMapping> wordMappings = wordsMappingService.getAllWordsMappings();
-        if (wordMappings.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT); // No content if list is empty
-        }
-        return new ResponseEntity<>(wordMappings, HttpStatus.OK);
-    }
 
     // Find word mappings by word
     @Operation(summary = "Find word mappings by word", description = "Search for word mappings by the specified word")

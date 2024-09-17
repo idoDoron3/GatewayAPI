@@ -1,4 +1,4 @@
-package com.example.apigetawayservice.dto;
+package com.example.apigatewayservice.dto;
 
 public class WordsMapping {
     private String word;

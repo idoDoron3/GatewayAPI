@@ -5,11 +5,13 @@ import com.example.dalservice.entity.ArticleStatus;
 import com.example.dalservice.repository.JPA.ArticleJpaRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.slf4j.Logger;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ArticleService {
@@ -28,7 +30,7 @@ public class ArticleService {
         // Check if an article with the same name and author exists
         Optional<Article> existingArticle = articleRepository.findByNameAndAuthor(article.getName(), article.getAuthor());
         if (existingArticle.isPresent()) {
-            throw new Exception("An article with the same name and author already exists.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "An article with the same name and author already exists.");
         }
         // Ensure the status is converted to lowercase before saving
         article.setStatus(ArticleStatus.valueOf(article.getStatus().toString().toLowerCase()));
@@ -39,11 +41,13 @@ public class ArticleService {
     }
     // Retrieve an article by its ID, throws NoSuchElementException if not found
     public Optional<Article> getArticleById(Long id) {
-        Optional<Article> article = articleRepository.findById(id);
-        if (article.isEmpty()) {
-            throw new NoSuchElementException("Article not found with id: " + id);
-        }
-        return article;
+//        Optional<Article> article = articleRepository.findById(id);
+//        if (article.isEmpty()) {
+//            throw new NoSuchElementException("Article not found with id: " + id);
+//        }
+//        return article;
+        return articleRepository.findById(id);
+
     }
 
     // Method to update the article's status
@@ -57,21 +61,9 @@ public class ArticleService {
             throw new NoSuchElementException("Article with ID " + articleId + " not found");
         }
     }
-    // Retrieve all articles
-    public List<Article> getAllArticles(){
-        return this.articleRepository.findAll();
-    }
+
     // Delete an article by its ID - and also all of this article appearances in db - cascade
     public void deleteArticle(Long id){
         this.articleRepository.deleteById(id);
-    }
-    // Get the most recent article
-    public Optional<Article> getMostRecentArticle() {
-        return this.articleRepository.findTopByOrderByCreatedAtDesc();
-    }
-
-    // Get the oldest article
-    public Optional<Article> getOldestArticle() {
-        return this.articleRepository.findTopByOrderByCreatedAtAsc();
     }
 }

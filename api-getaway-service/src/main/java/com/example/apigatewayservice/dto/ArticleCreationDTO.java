@@ -1,4 +1,4 @@
-package com.example.apigetawayservice.dto;
+package com.example.apigatewayservice.dto;
 
 import java.time.LocalDateTime;
 
@@ -60,5 +60,9 @@ public class ArticleCreationDTO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public byte[] getContent() {
+        return content;
     }
 }

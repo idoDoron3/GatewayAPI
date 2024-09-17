@@ -3,6 +3,7 @@ package com.example.parserservice.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.parserservice.DTO.ParsedWordMappingDTO;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,6 +20,8 @@ public class ArticleParserService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ExecutorService executorService = Executors.newCachedThreadPool();  // Dynamic thread pool
 
+    @Value("${dal.service.url}")
+    private String articleServiceUrl;
     // Minimum chunk size to justify using multiple threads
     private static final int MIN_CHUNK_SIZE = 500;
 
@@ -143,7 +146,7 @@ public class ArticleParserService {
 
     // Send the parsed word mappings to the DAL service
     protected void sendParsedDataToDal(List<ParsedWordMappingDTO> wordMappings) {
-        String dalServiceUrl = "http://localhost:8081/api/word-mappings/save-all";//TODO
+        String dalServiceUrl = this.articleServiceUrl  +"/api/word-mappings/save-all";
         // Adjust the DAL service URL as necessary
         restTemplate.postForEntity(dalServiceUrl, wordMappings, Void.class);
     }

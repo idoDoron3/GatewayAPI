@@ -27,31 +27,6 @@ public class ArticleController {
         this.articleContentService = articleContentService;
     }
 
-    // DTO for adding a new article (metadata and content)
-//    public static class ArticleCreationDTO {
-//        private String name;
-//        private String author;
-//        private long size;
-//        private String status;
-//        private byte[] content; // For storing the binary content of the article
-//
-//        // Getters and Setters
-//        public String getName() {return name;}
-//        public String getAuthor() {
-//            return author;
-//        }
-//        public long getSize() {
-//            return size;
-//        }
-//        public String getStatus() {
-//            return status;
-//        }
-//        public byte[] getContent() {
-//            return content;
-//        }
-//
-//    }
-
     // Add a new article (metadata and content)
     @Operation(summary = "Create a new article", description = "Add a new article along with its content to the database")
     @ApiResponse(responseCode = "201", description = "Article created successfully")
@@ -76,10 +51,8 @@ public class ArticleController {
             );
             Article savedArticle = articleService.saveArticle(article);
             // Create and save the article content
-
             ArticleContent content = new ArticleContent(savedArticle, articleDTO.getContent());
             articleContentService.saveArticleContent(content);
-
             return new ResponseEntity<>("Article created successfully with ID: " + savedArticle.getId(), HttpStatus.CREATED);
         }catch (DataIntegrityViolationException e) {
             // Handle cases like duplicate entries
@@ -107,6 +80,8 @@ public class ArticleController {
         dto.setAuthor(article.getAuthor());
         dto.setSize(article.getSize());
         dto.setStatus(article.getStatus().name());
+        dto.setCreatedAt(article.getCreatedAt());
+        dto.setId(article.getId());
 
         // Retrieve the content if available
         Optional<ArticleContent> contentOptional = articleContentService.getArticleContentById(id);
@@ -138,74 +113,12 @@ public class ArticleController {
     }
 
     // Delete an article by ID (cascading will delete content and mappings)
-    @Operation(summary = "Delete an article by ID", description = "Delete an article by its ID, and cascade delete related content and word mappings")
+    @Operation(summary = "Delete an article by ID", description = "Deletes the Article with the given id and cascade delete related content and word mappings. If the article is not found in the persistence store it is silently ignored.")
     @ApiResponse(responseCode = "204", description = "Article deleted successfully")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteArticle(@PathVariable Long id) {
         articleService.deleteArticle(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    // Get the most recent article
-    @Operation(summary = "Get the most recent article", description = "Retrieve the most recently added article")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved the most recent article")
-    @ApiResponse(responseCode = "404", description = "No articles found")
-    @GetMapping("/recent")
-    public ResponseEntity<ArticleCreationDTO> getMostRecentArticle() {
-        Optional<Article> articleOptional  = articleService.getMostRecentArticle();
-        if (!articleOptional.isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        Article article = articleOptional.get();
-        ArticleCreationDTO dto = convertToDTO(article);
-        return new ResponseEntity<>(dto, HttpStatus.OK);
-    }
-
-    // Get the oldest article
-    @Operation(summary = "Get the oldest article", description = "Retrieve the oldest article in the database")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved the oldest article")
-    @ApiResponse(responseCode = "404", description = "No articles found")
-    @GetMapping("/oldest")
-    public ResponseEntity<ArticleCreationDTO> getOldestArticle() {
-        Optional<Article> articleOptional  = articleService.getOldestArticle();
-        if (!articleOptional.isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-        Article article = articleOptional.get();
-        ArticleCreationDTO dto = convertToDTO(article);
-        return new ResponseEntity<>(dto, HttpStatus.OK);
-    }
-
-    // Get the longest article (by size)
-    @Operation(summary = "Get the longest article", description = "Retrieve the article with the longest content")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved the longest article")
-    @ApiResponse(responseCode = "404", description = "No articles found")
-    @GetMapping("/longest")
-    public ResponseEntity<ArticleCreationDTO> getLongestArticle() {
-        Optional<ArticleContent> articleOptional  = articleContentService.getLongestArticleContent();
-        if (!articleOptional.isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        ArticleContent article = articleOptional.get();
-        ArticleCreationDTO dto = convertToDTO(article.getArticle());
-        return new ResponseEntity<>(dto, HttpStatus.OK);
-    }
-
-    // Get the shortest article (by size)
-    @Operation(summary = "Get the shortest article", description = "Retrieve the article with the shortest content")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved the shortest article")
-    @ApiResponse(responseCode = "404", description = "No articles found")
-    @GetMapping("/shortest")
-    public ResponseEntity<ArticleCreationDTO> getShortestArticle() {
-        Optional<ArticleContent> articleOptional  = articleContentService.getShortestArticleContent();
-        if (!articleOptional.isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-        ArticleContent article = articleOptional.get();
-        ArticleCreationDTO dto = convertToDTO(article.getArticle());
-        return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
     private ArticleCreationDTO convertToDTO(Article article) {
