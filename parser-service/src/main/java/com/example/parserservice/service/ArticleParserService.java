@@ -65,7 +65,7 @@ public class ArticleParserService {
         //convert the map value from List<Integer> to string - to send ath DTO to the dal
         List<ParsedWordMappingDTO> result = convertToDTO(wordMappings, articleId);
         // Send parsed word mappings to the DAL service
-//        sendParsedDataToDal(result);
+        sendParsedDataToDal(result);
         return result;
     }
 
@@ -93,7 +93,7 @@ public class ArticleParserService {
         Map<String, List<Integer>> wordMappings = parseChunk(content, 0);
         // Convert map to list of ParsedWordMappingDTO objects
         List<ParsedWordMappingDTO> result = convertToDTO(wordMappings, articleId);
-//        sendParsedDataToDal(result);
+        sendParsedDataToDal(result);
         return result;
     }
 
