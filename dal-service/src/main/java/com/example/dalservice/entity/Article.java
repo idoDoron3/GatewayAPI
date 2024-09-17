@@ -3,7 +3,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "articles")// Maps this class to the 'articles' table in the database
+@Table(name = "articles")// maps this class to the 'articles' table in the database
 public class Article {
 
     @Id

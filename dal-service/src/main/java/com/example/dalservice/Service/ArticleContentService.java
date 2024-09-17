@@ -33,12 +33,6 @@ public class ArticleContentService {
     public void deleteArticleContentById(Long id) {
         articleContentRepository.deleteById(id);
     }
-    // Get the article content with the longest compressed content
-    public Optional<ArticleContent> getLongestArticleContent(){
-        return this.articleContentRepository.findTopByOrderByCompressedContentLengthDesc();
-    }
-    // Get the article content with the shortest compressed content
-    public Optional<ArticleContent> getShortestArticleContent() {
-        return this.articleContentRepository.findTopByOrderByCompressedContentLengthAsc();
-    }
+
+
 }

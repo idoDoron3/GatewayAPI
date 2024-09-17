@@ -13,4 +13,7 @@ public interface WordsMappingJpaRepository extends JpaRepository<WordsMapping, W
     @Query("SELECT w FROM WordsMapping w WHERE LOWER(w.word) = LOWER(:word)")
 
     List<WordsMapping> findByWord(@Param("word")String word);
+
+    void deleteByArticleId(Long articleId);
+
 }

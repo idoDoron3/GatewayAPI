@@ -49,6 +49,9 @@ public class WordsMappingService {
 
         return savedWordMappings;
     }
+    public void deleteByArticleId(Long articleId) {
+        wordsMappingRepository.deleteByArticleId(articleId);
+    }
 }
 
 

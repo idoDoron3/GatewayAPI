@@ -1,5 +1,12 @@
 package com.example.dalservice.Service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.dalservice.Service.ArticleContentService;
+import com.example.dalservice.Service.WordsMappingService;
+
+
 import com.example.dalservice.entity.Article;
 import com.example.dalservice.entity.ArticleStatus;
 import com.example.dalservice.repository.JPA.ArticleJpaRepository;
@@ -41,7 +48,6 @@ public class ArticleService {
     }
     // retrieve an article by its ID, throws NoSuchElementException if not found
     public Optional<Article> getArticleById(Long id) {
-
         return articleRepository.findById(id);
 
     }
@@ -63,3 +69,4 @@ public class ArticleService {
         this.articleRepository.deleteById(id);
     }
 }
+

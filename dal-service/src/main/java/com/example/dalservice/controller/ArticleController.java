@@ -3,6 +3,7 @@ import com.example.dalservice.dto.ArticleCreationDTO;
 import com.example.dalservice.dto.ArticleContentDTO;
 import com.example.dalservice.Service.ArticleService;
 import com.example.dalservice.Service.ArticleContentService;
+import com.example.dalservice.Service.WordsMappingService;
 import com.example.dalservice.entity.Article;
 import com.example.dalservice.entity.ArticleContent;
 import com.example.dalservice.entity.ArticleStatus;
@@ -13,18 +14,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
+
 
 @RestController
 @RequestMapping("/api/articles")
 public class ArticleController {
 
     private final ArticleService articleService;
+    private final WordsMappingService wordsMappingService;
+
     private final ArticleContentService articleContentService;
 
+
     // Constructor-based dependency injection
-    public ArticleController(ArticleService articleService, ArticleContentService articleContentService) {
+    public ArticleController(ArticleService articleService, ArticleContentService articleContentService,WordsMappingService wordsMappingService ) {
         this.articleService = articleService;
         this.articleContentService = articleContentService;
+        this.wordsMappingService = wordsMappingService;
     }
 
     // Add a new article (metadata and content)
@@ -112,11 +119,14 @@ public class ArticleController {
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
-    // Delete an article by ID (cascading will delete content and mappings)
-    @Operation(summary = "Delete an article by ID", description = "Deletes the Article with the given id and cascade delete related content and word mappings. If the article is not found in the persistence store it is silently ignored.")
+    // Delete an article by IlD (cascading will delete content and mappings)
+    @Operation(summary = "Deete an article by ID", description = "Deletes the Article with the given id and cascade delete related content and word mappings. If the article is not found in the persistence store it is silently ignored.")
     @ApiResponse(responseCode = "204", description = "Article deleted successfully")
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<Void> deleteArticle(@PathVariable Long id) {
+        wordsMappingService.deleteByArticleId(id);
+        articleContentService.deleteArticleContentById(id);
         articleService.deleteArticle(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
