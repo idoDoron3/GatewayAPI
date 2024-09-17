@@ -25,12 +25,6 @@ public class WordsMappingService {
     }
     // Find all word mappings by a specific word
     public List<WordsMapping> findWordsByWord(String word) {
-//        List<WordsMapping> result =  this.wordsMappingRepository.findByWord(word);
-//        if (result.isEmpty()) {
-//            throw new NoSuchElementException("No results found for the word: " + word);
-//        }
-//
-//        return result;
         return wordsMappingRepository.findByWord(word);
 
     }
