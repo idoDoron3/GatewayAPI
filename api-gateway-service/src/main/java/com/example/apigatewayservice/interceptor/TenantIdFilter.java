@@ -34,10 +34,8 @@ public class TenantIdFilter implements Filter {
         if (tenantId != null && !tenantId.isEmpty()) {
             // Log the tenantId if present
             logger.info("Got an HTTP request for {}", tenantId);
-        } else {
-            // Log that no tenantId was found
-            logger.info("No tenantId found in the request headers.");
         }
+
 
         // Continue with the next filter or the controller
         chain.doFilter(request, response);

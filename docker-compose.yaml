@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: articles_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  dal:
+    build:
+      context: ./dal-service
+      dockerfile: Dockerfile
+    container_name: dal
+    depends_on:
+      - mysql
+    ports:
+      - "8081:8081"
+    environment:
+      DB_IP: mysql
+      DB_PORT: 3306
+      DB_NAME: articles_db
+      DB_USERNAME: user
+      DB_PASSWORD: password
+    networks:
+      - app-network
+
+  parser:
+    build:
+      context: ./parser-service
+      dockerfile: Dockerfile
+    container_name: parser
+    depends_on:
+      - dal
+    ports:
+      - "8082:8082"
+    environment:
+      DAL_HOST: dal
+      DAL_PORT: 8081
+    networks:
+      - app-network
+
+  apigateway:
+    build:
+      context: ./api-gateway-service
+      dockerfile: Dockerfile
+    container_name: apigateway
+    depends_on:
+      - parser
+    environment:
+      PARSER_HOST: parser
+      PARSER_PORT: 8082
+      DAL_HOST: dal
+      DAL_PORT: 8081
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:

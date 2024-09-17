@@ -7,9 +7,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +32,7 @@ public class ApiGatewayController {
         this.apiGatewayService = apiGatewayService;
     }
 
-    @Operation(summary = "Create a new article", description = "Add a new article and its content to the system")
+    @Operation(summary = "Create a new article", description = "Add a new article and its content to the system. the content pass as byte array")
     @ApiResponse(responseCode = "201", description = "Successfully created the article")
     @ApiResponse(responseCode = "400", description = "Invalid article input")
     @ApiResponse(responseCode = "409", description = "Conflict - article with the same name and author already exists")
