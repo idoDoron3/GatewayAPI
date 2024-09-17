@@ -2,7 +2,7 @@ package com.example.apigatewayservice.dto;
 
 import java.time.LocalDateTime;
 
-public class ArticleCreationDTO {
+public class ArticleDTO {
     private Long id;
     private String name;
     private String author;
@@ -12,7 +12,7 @@ public class ArticleCreationDTO {
     private String status;
     private byte[] content;
 
-    public ArticleCreationDTO(String name, String author, long size, String status, byte[] content) {
+    public ArticleDTO(String name, String author, long size, String status, byte[] content) {
         this.name = name;
         this.author = author;
         this.size = size;

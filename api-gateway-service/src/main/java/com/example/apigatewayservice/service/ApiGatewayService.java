@@ -1,7 +1,9 @@
 package com.example.apigatewayservice.service;
 
-import com.example.apigatewayservice.dto.ArticleCreationDTO;
+import com.example.apigatewayservice.dto.ArticleDTO;
 import com.example.apigatewayservice.dto.ArticleContentDTO;
+import com.example.apigatewayservice.dto.WordsMapping;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -12,8 +14,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ApiGatewayService {
@@ -29,13 +30,13 @@ public class ApiGatewayService {
     public ApiGatewayService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         objectMapper = new ObjectMapper();
-        // Register JavaTimeModule to handle LocalDateTime
+        // register JavaTimeModule to handle LocalDateTime
         objectMapper.registerModule(new JavaTimeModule());
-        // Configure ObjectMapper to format dates in ISO-8601
+        // configure objectMapper to format dates
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    public ResponseEntity<String> addArticle(ArticleCreationDTO articleDTO) {
+    public ResponseEntity<String> addArticle(ArticleDTO articleDTO) {
         if (!validateArticleDTO(articleDTO)) {
             return ResponseEntity.badRequest().body("Invalid input data");
         }
@@ -45,10 +46,9 @@ public class ApiGatewayService {
 
         if (response.getStatusCode() == HttpStatus.CREATED) {
             String responseBody = response.getBody();
-            // Extract the generated ID from the response (JSON format)
+            // extract the generated ID from the response -json format
             Long articleId = extractArticleId(responseBody);
-            System.out.println(articleId);
-            // Send the article content to the parser service
+            // send to parser service
             String contentString = new String(articleDTO.getContent(), StandardCharsets.UTF_8);
             ArticleContentDTO contentDTO = new ArticleContentDTO(articleId, contentString);
             String parserUrl = parserServiceUrl + "/api/parser/parse";
@@ -61,27 +61,26 @@ public class ApiGatewayService {
 
     public ResponseEntity<String> getArticleMetadata(Long id) {
         String url = articleServiceUrl + "/api/articles/" + id + "/metadata";
-        ResponseEntity<ArticleCreationDTO> response = restTemplate.getForEntity(url, ArticleCreationDTO.class);
+        ResponseEntity<ArticleDTO> response = restTemplate.getForEntity(url, ArticleDTO.class);
 
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-            ArticleCreationDTO dto = response.getBody();
+            ArticleDTO dto = response.getBody();
             try {
-                // Convert DTO to JSON string using ObjectMapper
+                // Convert dto to json string using ObjectMapper
                 ObjectNode jsonNode = objectMapper.valueToTree(dto);
-                // Remove the "content" field
+                // remove the "content" field
                 jsonNode.remove("content");
-                // Convert back to JSON string
+                // convert back to json string
                 String jsonString = objectMapper.writeValueAsString(jsonNode);
                 return new ResponseEntity<>(jsonString, HttpStatus.OK);
             } catch (Exception e) {
-                // Handle JSON conversion errors
+                // handle json conversion errors
                 return new ResponseEntity<>("Error converting metadata to JSON", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } else if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
-            // Return 404 Not Found if the article or metadata does not exist
+            // Return 404
             return new ResponseEntity<>("Article not found", HttpStatus.NOT_FOUND);
         } else {
-            // Handle other possible errors
             return new ResponseEntity<>("An error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -92,36 +91,63 @@ public class ApiGatewayService {
 
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
             try {
-                // Parse JSON response
+                // parse json response
                 ObjectMapper objectMapper = new ObjectMapper();
                 JsonNode jsonNode = objectMapper.readTree(response.getBody());
-
-                // Extract the Base64-encoded content
+                // extract the encoded content
                 String base64Content = jsonNode.path("content").asText();
-
-                // Decode Base64 content to get the original string
+                // decode content to get the original string
                 byte[] decodedBytes = Base64.getDecoder().decode(base64Content);
                 String content = new String(decodedBytes, StandardCharsets.UTF_8);
 
-                // Return the decoded content as response
+                // return the decoded content as response
                 return new ResponseEntity<>(content, HttpStatus.OK);
             } catch (Exception e) {
-                // Handle JSON parsing and Base64 decoding errors
+                // handle json parsing and Base64 decoding errors
                 return new ResponseEntity<>("Error processing content", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }  else if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
-            // Return 404 Not Found if the article doesn't exist
+            // return 404
             return new ResponseEntity<>("Article content not found", HttpStatus.NOT_FOUND);
         } else {
-            // Handle other error cases
             return new ResponseEntity<>("An error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public ResponseEntity<String> getWordMappings(String word) {
-        String url = articleServiceUrl + "/api/word-mappings/find/" + word;
-        return restTemplate.getForEntity(url, String.class);
+public ResponseEntity<Map<String, Object>> getWordMappings(String word) {
+    //  url to call the dal service
+    String url = articleServiceUrl + "/api/word-mappings/find/" + word;
+    ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+    if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
+        // if no word mappings are found, return a 404
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+    try {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<WordsMapping> wordMappings = objectMapper.readValue(response.getBody(), new TypeReference<List<WordsMapping>>() {});
+        Map<String, Object> formattedResponse = new LinkedHashMap<>();
+        formattedResponse.put("word", word);
+        // prepare the locations
+        List<Map<String, Object>> locations = new ArrayList<>();
+        for (WordsMapping mapping : wordMappings) {
+            Map<String, Object> location = new HashMap<>();
+            location.put("article_id", mapping.getArticleId());
+            location.put("offsets", mapping.getOffsets()); // Just return the offsets as a string
+            locations.add(location);
+        }
+
+        formattedResponse.put("locations", locations);
+
+        // return the formatted response
+        return new ResponseEntity<>(formattedResponse, HttpStatus.OK);
+
+    } catch (Exception e) {
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
+
 
     public ResponseEntity<String> deleteArticle(Long id) {
         String url = articleServiceUrl + "/api/articles/" + id;
@@ -129,8 +155,8 @@ public class ApiGatewayService {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    // Validate the ArticleCreationDTO input
-    private boolean validateArticleDTO(ArticleCreationDTO articleDTO) {
+    // validate the articleCreationDTO input
+    private boolean validateArticleDTO(ArticleDTO articleDTO) {
         if (articleDTO == null) {
             return false;
         }
@@ -143,7 +169,7 @@ public class ApiGatewayService {
         return true;
     }
     private Long extractArticleId(String responseBody) {
-        // Extract the article ID from the response body (implement as needed)
+        // extract the article ID from the response body
         return Long.parseLong(responseBody.replaceAll("[^0-9]", ""));
     }
 
@@ -160,7 +186,7 @@ public class ApiGatewayService {
     }
 
     public String sanitizeWord(String word) {
-        String sanitized = word.replaceAll("[^a-z]", "").toLowerCase();
+        String sanitized = word.replaceAll("[^a-zA-Z]", " ").split("\\s+")[0].toLowerCase();
         if (sanitized.isEmpty()) {
             throw new IllegalArgumentException("Invalid word input.");
         }

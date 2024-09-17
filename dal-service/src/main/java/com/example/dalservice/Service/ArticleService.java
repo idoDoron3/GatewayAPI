@@ -39,13 +39,9 @@ public class ArticleService {
         return this.articleRepository.save(article);
 
     }
-    // Retrieve an article by its ID, throws NoSuchElementException if not found
+    // retrieve an article by its ID, throws NoSuchElementException if not found
     public Optional<Article> getArticleById(Long id) {
-//        Optional<Article> article = articleRepository.findById(id);
-//        if (article.isEmpty()) {
-//            throw new NoSuchElementException("Article not found with id: " + id);
-//        }
-//        return article;
+
         return articleRepository.findById(id);
 
     }

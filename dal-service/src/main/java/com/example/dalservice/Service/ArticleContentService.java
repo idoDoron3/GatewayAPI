@@ -38,9 +38,7 @@ public class ArticleContentService {
         return this.articleContentRepository.findTopByOrderByCompressedContentLengthDesc();
     }
     // Get the article content with the shortest compressed content
-    public Optional<ArticleContent> getShortestArticleContent(){
+    public Optional<ArticleContent> getShortestArticleContent() {
         return this.articleContentRepository.findTopByOrderByCompressedContentLengthAsc();
     }
-
-
 }
