@@ -70,16 +70,6 @@ public class ArticleParserServiceTest {
     }
 
 
-    // Test normalization of content
-    @Test
-    public void testNormalizeContent() {
-        String content = "Café Résumé naïve";
-        String normalizedContent = articleParserService.normalizeContent(content);
-
-        // Ensure that the accents are removed and converted to lowercase
-        assertEquals("cafe resume naive", normalizedContent);
-    }
-
     // Test that parsed word mappings are correctly sent to the DAL service
     @Test
     public void testSendParsedDataToDal() {

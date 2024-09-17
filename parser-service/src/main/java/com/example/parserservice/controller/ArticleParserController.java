@@ -23,13 +23,11 @@ public class ArticleParserController {
         try {
             // Parse the article content
             List<ParsedWordMappingDTO> wordMappings = articleParserService.parseArticle(articleContentDTO.getContent(), articleContentDTO.getArticleId());
-
             // Return the parsed word mappings as the response
             return new ResponseEntity<>(wordMappings, HttpStatus.OK);
         } catch (Exception e) {
-            // In case of any error, return a bad request status
+            // In case of any error, return a bad request statusparser
             System.err.println("Error parsing article content: " + e.getMessage());
-
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
